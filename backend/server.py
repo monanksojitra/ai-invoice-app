@@ -160,6 +160,9 @@ class BulkUpdateRequest(BaseModel):
 class PushTokenUpdate(BaseModel):
     push_token: str
 
+class InvoiceStatusUpdate(BaseModel):
+    status: str
+
 # ─── JWT Utilities ────────────────────────────────────────────────────────────
 
 def create_token(user_id: str, email: str) -> str:
@@ -832,4 +835,4 @@ app.add_middleware(
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
-    client.close()
+    mongo_client.close()

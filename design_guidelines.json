@@ -1,0 +1,171 @@
+{
+  "identity": {
+    "persona": "E1 - The Anti-AI Designer",
+    "core_principles": [
+      "Fusion over Imitation: Mix Swiss precision with Indian market vibrancy.",
+      "Content is King: Data legibility (prices, dates) is the hero.",
+      "Contrast: High contrast for sunlight readability (outdoor usage).",
+      "No Soft UI: Use crisp borders and clear hierarchy over vague shadows."
+    ]
+  },
+  "typography": {
+    "font_family": {
+      "headings": "Outfit-Bold",
+      "body": "Inter-Regular",
+      "mono": "JetBrainsMono-Regular"
+    },
+    "scale": {
+      "xs": 12,
+      "sm": 14,
+      "base": 16,
+      "lg": 18,
+      "xl": 20,
+      "2xl": 24,
+      "3xl": 30,
+      "4xl": 36,
+      "5xl": 48
+    },
+    "weights": {
+      "regular": "400",
+      "medium": "500",
+      "semibold": "600",
+      "bold": "700"
+    }
+  },
+  "colors": {
+    "light": {
+      "primary": "#1E1B4B",
+      "primary_foreground": "#FFFFFF",
+      "secondary": "#F59E0B",
+      "secondary_foreground": "#1E1B4B",
+      "background": "#FAFAFA",
+      "surface": "#FFFFFF",
+      "surface_highlight": "#F3F4F6",
+      "text_main": "#111827",
+      "text_muted": "#6B7280",
+      "border": "#E5E7EB",
+      "success": "#059669",
+      "error": "#E11D48",
+      "warning": "#D97706",
+      "info": "#2563EB"
+    },
+    "dark": {
+      "primary": "#818CF8",
+      "primary_foreground": "#FFFFFF",
+      "secondary": "#FBBF24",
+      "secondary_foreground": "#1E1B4B",
+      "background": "#09090B",
+      "surface": "#18181B",
+      "surface_highlight": "#27272A",
+      "text_main": "#F9FAFB",
+      "text_muted": "#9CA3AF",
+      "border": "#27272A",
+      "success": "#10B981",
+      "error": "#F43F5E",
+      "warning": "#F59E0B",
+      "info": "#3B82F6"
+    }
+  },
+  "layout": {
+    "spacing": {
+      "xs": 4,
+      "sm": 8,
+      "md": 12,
+      "lg": 16,
+      "xl": 24,
+      "2xl": 32,
+      "3xl": 48
+    },
+    "radius": {
+      "sm": 4,
+      "md": 8,
+      "lg": 12,
+      "xl": 16,
+      "full": 9999
+    },
+    "container": {
+      "padding_horizontal": 16,
+      "padding_vertical": 24
+    }
+  },
+  "components": {
+    "button": {
+      "default": {
+        "height": 56,
+        "borderRadius": 12,
+        "justifyContent": "center",
+        "alignItems": "center",
+        "backgroundColor": "#1E1B4B"
+      },
+      "text": {
+        "color": "#FFFFFF",
+        "fontSize": 16,
+        "fontWeight": "600",
+        "fontFamily": "Outfit-Bold"
+      },
+      "secondary": {
+        "backgroundColor": "#F3F4F6",
+        "borderWidth": 1,
+        "borderColor": "#E5E7EB"
+      },
+      "secondary_text": {
+        "color": "#1F2937"
+      }
+    },
+    "card": {
+      "backgroundColor": "#FFFFFF",
+      "borderRadius": 16,
+      "padding": 16,
+      "borderWidth": 1,
+      "borderColor": "#E5E7EB",
+      "shadowColor": "#000",
+      "shadowOffset": { "width": 0, "height": 2 },
+      "shadowOpacity": 0.05,
+      "shadowRadius": 4,
+      "elevation": 2
+    },
+    "input": {
+      "height": 56,
+      "backgroundColor": "#FFFFFF",
+      "borderRadius": 12,
+      "borderWidth": 1,
+      "borderColor": "#E5E7EB",
+      "paddingHorizontal": 16,
+      "fontSize": 16,
+      "color": "#111827"
+    }
+  },
+  "assets": {
+    "images": {
+      "onboarding_hero": "https://images.unsplash.com/photo-1739125875303-f95270e3d4c5?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzd8MHwxfHNlYXJjaHwyfHxpbmRpYW4lMjBzdHJlZXQlMjBtYXJrZXQlMjB2ZWdldGFibGUlMjBzZWxsZXJ8ZW58MHx8fHwxNzczNDEyNTc2fDA&ixlib=rb-4.1.0&q=85",
+      "invoice_sample": "https://images.unsplash.com/photo-1669975106497-15c603f0fbed?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzZ8MHwxfHNlYXJjaHwyfHxtb2Rlcm4lMjBvZmZpY2UlMjBtaW5pbWFsaXN0JTIwd29ya3NwYWNlJTIwcGFwZXIlMjBpbnZvaWNlfGVufDB8fHx8MTc3MzQxMjU2MXww&ixlib=rb-4.1.0&q=85",
+      "currency_bg": "https://images.unsplash.com/photo-1509602742943-0bf62bd36166?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzV8MHwxfHNlYXJjaHw0fHxpbmRpYW4lMjBjdXJyZW5jeSUyMG5vdGVzJTIwcnVwZWUlMjBidW5kbGV8ZW58MHx8fHwxNzczNDEyNTc3fDA&ixlib=rb-4.1.0&q=85"
+    },
+    "icons": {
+      "library": "@expo/vector-icons",
+      "preferred_set": "MaterialCommunityIcons",
+      "size": {
+        "sm": 16,
+        "md": 24,
+        "lg": 32
+      }
+    }
+  },
+  "instructions_to_main_agent": [
+    "1. SETUP: Create 'src/constants/Colors.ts' and 'src/constants/Layout.ts' implementing the values above.",
+    "2. FONTS: Use 'expo-font' to load 'Outfit' and 'Inter'. If these specific fonts fail to load, fallback to System fonts immediately to avoid crashes.",
+    "3. STYLING: Do NOT use Tailwind classes (className='...'). Use StyleSheet.create({}) or inline styles with the constants defined.",
+    "4. COMPONENTS: Create reusable 'Button.tsx', 'Input.tsx', 'Card.tsx' in 'src/components/ui/' based on the component styles defined above.",
+    "5. SAFE AREA: Always wrap screen content in <SafeAreaView> from 'react-native-safe-area-context'.",
+    "6. KEYBOARDS: Use <KeyboardAvoidingView> with behavior='padding' on iOS and 'height' on Android for all forms.",
+    "7. NAVIGATION: Use 'expo-router'. Create a Layout file for the tabs.",
+    "8. THEME: Implement a ThemeContext or use React Navigation's theme prop to handle Light/Dark mode toggling.",
+    "9. ANIMATION: Use 'react-native-reanimated' for layout transitions (entering={FadeInDown})."
+  ],
+  "UNIVERSAL_GUIDELINES": [
+    "Avoid generic 'SaaS Blue' gradients. Use solid, authoritative colors.",
+    "Ensure touch targets are at least 44x44 points.",
+    "Use 1px borders for separation, not just whitespace, to improve contrast in bright sunlight.",
+    "Data fields (prices, dates) should use Monospace font or tabular nums for alignment."
+  ]
+}

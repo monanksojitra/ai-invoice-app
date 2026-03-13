@@ -1,5 +1,6 @@
-"""InvoiceAI Backend — FastAPI + MongoDB + Claude Vision AI"""
+"""InvoiceAI Backend — FastAPI + MongoDB + Claude Vision AI + Cost Optimizations"""
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, Query
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import StreamingResponse
@@ -7,6 +8,7 @@ from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
+import sys
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr
@@ -23,6 +25,16 @@ import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 import csv
 
+# Sprint 1 cost-reduction services
+sys.path.insert(0, str(Path(__file__).parent))
+from services.image_preprocessor import preprocess_invoice_image, get_image_hash
+from services.model_router import select_model, should_use_batch, HAIKU, SONNET
+from services.pdf_handler import process_pdf
+from services.batch_processor import (
+    queue_for_batch, process_batch_queue, extract_invoice_with_llm,
+    EXTRACTION_SYSTEM_PROMPT, setup_scheduler
+)
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
 
@@ -34,10 +46,20 @@ JWT_ALGORITHM = "HS256"
 JWT_EXPIRE_DAYS = 30
 EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY", "")
 
-client = AsyncIOMotorClient(mongo_url)
-db = client[db_name]
+BATCH_ENABLED = True  # Feature flag for batch processing
 
-app = FastAPI(title="InvoiceAI API")
+mongo_client = AsyncIOMotorClient(mongo_url)
+db = mongo_client[db_name]
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    setup_scheduler(app, db)
+    yield
+    if hasattr(app.state, 'scheduler'):
+        app.state.scheduler.shutdown(wait=False)
+    mongo_client.close()
+
+app = FastAPI(title="InvoiceAI API", lifespan=lifespan)
 api_router = APIRouter(prefix="/api")
 security = HTTPBearer()
 
@@ -53,6 +75,7 @@ class UserCreate(BaseModel):
     business_name: str
     gstin: Optional[str] = None
     business_type: Optional[str] = "retail"
+    push_token: Optional[str] = None  # Expo push notification token
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -129,8 +152,13 @@ class CorrectionCreate(BaseModel):
     original_value: str
     corrected_value: str
 
-class InvoiceStatusUpdate(BaseModel):
-    status: str
+class BulkUpdateRequest(BaseModel):
+    invoice_ids: List[str]
+    action: str  # mark_paid | delete | categorize
+    updates: Optional[Dict[str, Any]] = None
+
+class PushTokenUpdate(BaseModel):
+    push_token: str
 
 # ─── JWT Utilities ────────────────────────────────────────────────────────────
 

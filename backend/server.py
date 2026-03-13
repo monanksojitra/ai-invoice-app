@@ -453,7 +453,7 @@ async def create_invoice(data: InvoiceCreate, current_user: dict = Depends(get_c
                 "phone": data.vendor_phone,
                 "address": data.vendor_address,
                 "created_at": now
-            }, "$inc": {"total_invoices": 1}, "$inc": {"total_spend": float(data.grand_total or 0)}},
+            }, "$inc": {"total_invoices": 1, "total_spend": float(data.grand_total or 0)}},
             upsert=True
         )
 

@@ -1,0 +1,31 @@
+export const Colors = {
+  primary: '#1E1B4B',
+  primaryLight: '#3730A3',
+  secondary: '#F59E0B',
+  secondaryLight: '#FCD34D',
+  background: '#F8FAFF',
+  surface: '#FFFFFF',
+  surfaceHighlight: '#F3F4F6',
+  textMain: '#111827',
+  textMuted: '#6B7280',
+  textLight: '#9CA3AF',
+  border: '#E5E7EB',
+  success: '#059669',
+  successLight: '#D1FAE5',
+  error: '#E11D48',
+  errorLight: '#FFE4E6',
+  warning: '#D97706',
+  warningLight: '#FEF3C7',
+  info: '#2563EB',
+  infoLight: '#DBEAFE',
+  paid: '#059669',
+  pending: '#D97706',
+  overdue: '#E11D48',
+  // Status colors
+  statusPaid: '#059669',
+  statusPending: '#D97706',
+  statusOverdue: '#E11D48',
+  statusCancelled: '#6B7280',
+};
+
+export default Colors;

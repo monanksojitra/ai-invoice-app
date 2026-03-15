@@ -10,6 +10,9 @@ interface User {
   gstin?: string;
   business_type?: string;
   plan: string;
+  credits: number;
+  monthly_invoice_count: number;
+  monthly_invoice_limit: number | null;
 }
 
 interface AuthState {

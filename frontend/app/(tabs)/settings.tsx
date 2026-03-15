@@ -77,32 +77,77 @@ export default function SettingsScreen() {
         {/* Account Section */}
         <Text style={styles.sectionLabel}>Account</Text>
         <Card style={styles.sectionCard}>
-          <SettingRow testID="edit-profile-btn" icon="account-edit-outline" title="Edit Profile" subtitle="Name, email, GSTIN" />
+          <SettingRow 
+            testID="edit-profile-btn" 
+            icon="account-edit-outline" 
+            title="Edit Profile" 
+            subtitle="Name, email, GSTIN"
+            onPress={() => router.push('/profile-edit')}
+          />
           <View style={styles.divider} />
-          <SettingRow testID="change-password-btn" icon="lock-reset" title="Change Password" />
+          <SettingRow 
+            testID="change-password-btn" 
+            icon="lock-reset" 
+            title="Change Password"
+            onPress={() => router.push('/change-password')}
+          />
           <View style={styles.divider} />
-          <SettingRow testID="business-settings-btn" icon="store-settings-outline" title="Business Settings" subtitle={user?.business_type || 'Not set'} />
+          <SettingRow 
+            testID="business-settings-btn" 
+            icon="store-settings-outline" 
+            title="Business Settings" 
+            subtitle={user?.business_type || 'Not set'}
+            onPress={() => router.push('/business-settings')}
+          />
         </Card>
 
         {/* Plan Section */}
         <Text style={styles.sectionLabel}>Plan & Billing</Text>
         <Card style={styles.sectionCard}>
           <SettingRow
-            testID="current-plan-btn" icon="crown-outline" iconColor={Colors.secondary}
-            title="Current Plan" rightText={(user?.plan || 'free').charAt(0).toUpperCase() + (user?.plan || 'free').slice(1)}
+            testID="current-plan-btn" 
+            icon="crown-outline" 
+            iconColor={Colors.secondary}
+            title="Current Plan" 
+            rightText={(user?.plan || 'free').charAt(0).toUpperCase() + (user?.plan || 'free').slice(1)}
+            onPress={() => router.push('/plan-billing')}
           />
           <View style={styles.divider} />
-          <SettingRow testID="upgrade-plan-btn" icon="arrow-up-circle-outline" iconColor={Colors.success} title="Upgrade Plan" subtitle="Unlock more features" />
+          <SettingRow 
+            testID="upgrade-plan-btn" 
+            icon="arrow-up-circle-outline" 
+            iconColor={Colors.success} 
+            title="Upgrade Plan" 
+            subtitle="Unlock more features"
+            onPress={() => router.push('/plan-billing')}
+          />
         </Card>
 
         {/* App Section */}
         <Text style={styles.sectionLabel}>App</Text>
         <Card style={styles.sectionCard}>
-          <SettingRow testID="notifications-btn" icon="bell-outline" title="Notifications" subtitle="Payment reminders & alerts" />
+          <SettingRow 
+            testID="notifications-btn" 
+            icon="bell-outline" 
+            title="Notifications" 
+            subtitle="Payment reminders & alerts"
+            onPress={() => router.push('/notification-settings')}
+          />
           <View style={styles.divider} />
-          <SettingRow testID="about-btn" icon="information-outline" title="About InvoiceAI" rightText="v1.0.0" />
+          <SettingRow 
+            testID="about-btn" 
+            icon="information-outline" 
+            title="About InvoiceAI" 
+            rightText="v1.0.0"
+            onPress={() => router.push('/about')}
+          />
           <View style={styles.divider} />
-          <SettingRow testID="privacy-btn" icon="shield-account-outline" title="Privacy Policy" />
+          <SettingRow 
+            testID="privacy-btn" 
+            icon="shield-account-outline" 
+            title="Privacy Policy"
+            onPress={() => router.push('/privacy-policy')}
+          />
         </Card>
 
         {/* AI Section */}

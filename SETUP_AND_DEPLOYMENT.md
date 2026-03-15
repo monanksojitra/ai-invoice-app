@@ -70,7 +70,19 @@ cat > .env << 'EOF'
 MONGO_URL=mongodb://localhost:27017
 DB_NAME=invoiceai_db
 JWT_SECRET=your-super-secret-jwt-key-change-in-production
-EMERGENT_LLM_KEY=your-api-key-here
+ANTHROPIC_API_KEY=your-anthropic-api-key
+OPENAI_API_KEY=your-openai-api-key
+GOOGLE_API_KEY=your-gemini-api-key
+DEFAULT_LLM_PROVIDER=anthropic
+LLM_FALLBACK_ORDER=anthropic,openai,gemini
+REDIS_URL=redis://localhost:6379/0
+CORS_ALLOW_ORIGINS=http://localhost:8081,http://localhost:19006
+MAX_UPLOAD_BYTES=10485760
+EXPORT_MAX_RECORDS=5000
+RATE_LIMIT_DEFAULT=60/minute
+RATE_LIMIT_AUTH=5/minute
+RATE_LIMIT_PROCESS=10/minute
+RATE_LIMIT_EXPORT=10/minute
 EOF
 
 # Start backend (new terminal)
@@ -140,7 +152,9 @@ python-jose>=3.3.0
 passlib>=1.7.4
 
 # AI/ML
-emergentintegrations==0.1.0
+anthropic>=0.40.0
+openai>=1.60.0
+google-generativeai>=0.8.3
 
 # Image Processing
 pillow
@@ -180,11 +194,25 @@ DB_NAME=invoiceai_db
 # Authentication (CHANGE IN PRODUCTION!)
 JWT_SECRET=your-super-secret-jwt-key-minimum-32-chars
 
-# AI API Key
-EMERGENT_LLM_KEY=your-emergent-api-key
+# AI API Keys
+ANTHROPIC_API_KEY=your-anthropic-api-key
+OPENAI_API_KEY=your-openai-api-key
+GOOGLE_API_KEY=your-gemini-api-key
+DEFAULT_LLM_PROVIDER=anthropic
+LLM_FALLBACK_ORDER=anthropic,openai,gemini
 
 # Optional: Batch processing toggle
 BATCH_ENABLED=true
+
+# Security and rate limiting
+REDIS_URL=redis://localhost:6379/0
+CORS_ALLOW_ORIGINS=http://localhost:8081,http://localhost:19006
+MAX_UPLOAD_BYTES=10485760
+EXPORT_MAX_RECORDS=5000
+RATE_LIMIT_DEFAULT=60/minute
+RATE_LIMIT_AUTH=5/minute
+RATE_LIMIT_PROCESS=10/minute
+RATE_LIMIT_EXPORT=10/minute
 EOF
 ```
 
@@ -338,7 +366,11 @@ show collections
 | `MONGO_URL` | Yes | MongoDB connection string | `mongodb://localhost:27017` |
 | `DB_NAME` | Yes | Database name | `invoiceai_db` |
 | `JWT_SECRET` | Yes | Secret key for JWT tokens (min 32 chars) | `your-super-secret-key` |
-| `EMERGENT_LLM_KEY` | Yes | API key for Claude access | `em-xxxx` |
+| `ANTHROPIC_API_KEY` | Yes | Anthropic API key | `sk-ant-...` |
+| `OPENAI_API_KEY` | No | OpenAI API key | `sk-...` |
+| `GOOGLE_API_KEY` | No | Gemini API key | `AIza...` |
+| `DEFAULT_LLM_PROVIDER` | No | Preferred provider | `anthropic` |
+| `LLM_FALLBACK_ORDER` | No | Provider fallback order | `anthropic,openai,gemini` |
 | `BATCH_ENABLED` | No | Enable batch processing | `true` |
 
 ### Frontend Environment Variables
@@ -354,7 +386,11 @@ show collections
 MONGO_URL=mongodb://localhost:27017
 DB_NAME=invoiceai_dev
 JWT_SECRET=dev-secret-key-not-for-production-use
-EMERGENT_LLM_KEY=your-dev-api-key
+ANTHROPIC_API_KEY=your-dev-api-key
+OPENAI_API_KEY=
+GOOGLE_API_KEY=
+DEFAULT_LLM_PROVIDER=anthropic
+LLM_FALLBACK_ORDER=anthropic,openai,gemini
 BATCH_ENABLED=false
 ```
 
@@ -363,7 +399,11 @@ BATCH_ENABLED=false
 MONGO_URL=mongodb+srv://user:pass@prod-cluster.mongodb.net
 DB_NAME=invoiceai_prod
 JWT_SECRET=<generated-secure-key-64-chars>
-EMERGENT_LLM_KEY=<production-api-key>
+ANTHROPIC_API_KEY=<production-api-key>
+OPENAI_API_KEY=<production-openai-key>
+GOOGLE_API_KEY=<production-gemini-key>
+DEFAULT_LLM_PROVIDER=anthropic
+LLM_FALLBACK_ORDER=anthropic,openai,gemini
 BATCH_ENABLED=true
 ```
 
@@ -455,7 +495,11 @@ services:
       - MONGO_URL=mongodb://mongodb:27017
       - DB_NAME=invoiceai_db
       - JWT_SECRET=${JWT_SECRET}
-      - EMERGENT_LLM_KEY=${EMERGENT_LLM_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - DEFAULT_LLM_PROVIDER=${DEFAULT_LLM_PROVIDER}
+      - LLM_FALLBACK_ORDER=${LLM_FALLBACK_ORDER}
     depends_on:
       - mongodb
     networks:
@@ -485,7 +529,7 @@ RUN apt-get update && apt-get install -y \
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install --no-cache-dir openpyxl pillow scipy PyMuPDF apscheduler httpx
+RUN pip install --no-cache-dir openpyxl pillow scipy PyMuPDF apscheduler httpx anthropic openai google-generativeai
 
 COPY . .
 
@@ -498,7 +542,11 @@ Run with Docker Compose:
 ```bash
 # Create .env file with secrets
 echo "JWT_SECRET=your-secret" > .env
-echo "EMERGENT_LLM_KEY=your-key" >> .env
+echo "ANTHROPIC_API_KEY=your-key" >> .env
+echo "OPENAI_API_KEY=" >> .env
+echo "GOOGLE_API_KEY=" >> .env
+echo "DEFAULT_LLM_PROVIDER=anthropic" >> .env
+echo "LLM_FALLBACK_ORDER=anthropic,openai,gemini" >> .env
 
 # Start all services
 docker-compose up -d
@@ -850,9 +898,13 @@ jobs:
         env:
           MONGO_URL: mongodb://localhost:27017
           DB_NAME: invoiceai_test
-          JWT_SECRET: test-secret-key
-          EMERGENT_LLM_KEY: ${{ secrets.EMERGENT_LLM_KEY }}
-          EXPO_PUBLIC_BACKEND_URL: http://localhost:8000
+          JWT_SECRET: test-secret-key-min-32-characters
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          DEFAULT_LLM_PROVIDER: anthropic
+          LLM_FALLBACK_ORDER: anthropic,openai,gemini
+          TEST_BACKEND_URL: http://localhost:8000
         run: |
           cd backend
           uvicorn server:app --host 0.0.0.0 --port 8000 &
@@ -1037,8 +1089,10 @@ npm install
 #### AI extraction fails
 
 ```bash
-# Check API key is set
-echo $EMERGENT_LLM_KEY
+# Check API keys are set
+echo $ANTHROPIC_API_KEY
+echo $OPENAI_API_KEY
+echo $GOOGLE_API_KEY
 
 # Check API key in .env
 grep EMERGENT backend/.env

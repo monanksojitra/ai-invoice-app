@@ -13,12 +13,13 @@ interface ButtonProps {
   textStyle?: TextStyle;
   testID?: string;
   icon?: React.ReactNode;
+  iconPosition?: 'left' | 'right';
   size?: 'sm' | 'md' | 'lg';
 }
 
 export const Button: React.FC<ButtonProps> = ({
   title, onPress, variant = 'primary', loading = false,
-  disabled = false, style, textStyle, testID, icon, size = 'md'
+  disabled = false, style, textStyle, testID, icon, iconPosition = 'left', size = 'md'
 }) => {
   const isDisabled = disabled || loading;
   const heightMap = { sm: 42, md: 52, lg: 58 };
@@ -65,10 +66,20 @@ export const Button: React.FC<ButtonProps> = ({
         <ActivityIndicator color={textColor} size="small" />
       ) : (
         <>
-          {icon}
-          <Text style={[styles.text, { color: textColor, fontSize: fontSizeMap[size], marginLeft: icon ? 8 : 0 }, textStyle]}>
+          {icon && iconPosition === 'left' && icon}
+          <Text style={[
+            styles.text, 
+            { 
+              color: textColor, 
+              fontSize: fontSizeMap[size], 
+              marginLeft: icon && iconPosition === 'left' ? 8 : 0,
+              marginRight: icon && iconPosition === 'right' ? 8 : 0
+            }, 
+            textStyle
+          ]}>
             {title}
           </Text>
+          {icon && iconPosition === 'right' && icon}
         </>
       )}
     </TouchableOpacity>

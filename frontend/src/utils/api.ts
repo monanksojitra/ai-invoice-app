@@ -38,6 +38,9 @@ async function request(path: string, options: RequestInit = {}): Promise<any> {
     headers['Authorization'] = `Bearer ${token}`;
   }
   const res = await fetch(`${BASE_URL}/api${path}`, { ...options, headers });
+  if (res.status === 401 || res.status === 403) {
+    await tokenStorage.remove();
+  }
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: 'Request failed' }));
     throw new Error(err.detail || `HTTP ${res.status}`);
@@ -76,6 +79,37 @@ export const api = {
 
   // Corrections
   logCorrection: (data: any) => request('/corrections', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Subscription & Credits
+  getPlans: () => request('/plans'),
+  getSubscription: () => request('/user/subscription'),
+  getUsageStats: () => request('/user/usage-stats'),
+  upgradeSubscription: (data: any) => request('/subscription/upgrade', { method: 'POST', body: JSON.stringify(data) }),
+  purchaseCredits: (data: any) => request('/credits/purchase', { method: 'POST', body: JSON.stringify(data) }),
+  getCreditBalance: () => request('/credits/balance'),
+  getTransactions: (limit: number = 20) => request(`/transactions?limit=${limit}`),
+  getUsageHistory: (params?: { limit?: number; days?: number }) => {
+    const qs = params ? '?' + new URLSearchParams(params as any).toString() : '';
+    return request(`/usage/history${qs}`);
+  },
+
+  // Profile & Settings
+  updateProfile: (data: any) => request('/user/profile', { method: 'PATCH', body: JSON.stringify(data) }),
+  changePassword: (data: any) => request('/user/password', { method: 'PATCH', body: JSON.stringify(data) }),
+  updateNotifications: (data: any) => request('/user/notifications', { method: 'PATCH', body: JSON.stringify(data) }),
+
+  // Payment
+  createPaymentOrder: (data: any) => request('/payment/create-order', { method: 'POST', body: JSON.stringify(data) }),
+  verifyPayment: (data: any) => request('/payment/verify', { method: 'POST', body: JSON.stringify(data) }),
+  getPaymentGateways: () => request('/payment/gateways'),
+
+  // Generic methods for flexibility
+  get: (path: string) => request(path),
+  post: (path: string, data?: any) => request(path, { method: 'POST', body: data ? JSON.stringify(data) : undefined }),
+  patch: (path: string, data?: any) => request(path, { method: 'PATCH', body: data ? JSON.stringify(data) : undefined }),
+  put: (path: string, data?: any) => request(path, { method: 'PUT', body: data ? JSON.stringify(data) : undefined }),
+  delete: (path: string) => request(path, { method: 'DELETE' }),
 };
 
+export const API_BASE_URL = BASE_URL;
 export default api;

@@ -4,7 +4,16 @@ import requests
 import os
 import uuid
 
-BASE_URL = os.environ.get("EXPO_PUBLIC_BACKEND_URL", "").rstrip("/")
+def _get_base_url() -> str:
+    base_url = (
+        os.environ.get("TEST_BACKEND_URL")
+        or os.environ.get("BACKEND_URL")
+        or "http://localhost:8000"
+    )
+    return base_url.rstrip("/")
+
+
+BASE_URL = _get_base_url()
 
 TEST_EMAIL = f"TEST_{uuid.uuid4().hex[:8]}@invoiceai.com"
 TEST_PASSWORD = "TestPass123"

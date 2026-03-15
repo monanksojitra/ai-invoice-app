@@ -8,7 +8,9 @@ import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/store/authStore';
 import { useInvoiceStore } from '../../src/store/invoiceStore';
+import { useNotificationStore } from '../../src/store/notificationStore';
 import { Card } from '../../src/components/ui/Card';
+import { Badge } from '../../src/components/ui/Badge';
 import Colors from '../../src/constants/Colors';
 import Layout from '../../src/constants/Layout';
 
@@ -36,9 +38,14 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { user } = useAuthStore();
   const { invoices, analytics, isLoading, fetchInvoices, fetchAnalytics } = useInvoiceStore();
+  const { unreadCount, loadNotifications } = useNotificationStore();
 
   const load = useCallback(async () => {
-    await Promise.all([fetchInvoices({ limit: '8' }), fetchAnalytics()]);
+    await Promise.all([
+      fetchInvoices({ limit: '8' }), 
+      fetchAnalytics(),
+      loadNotifications()
+    ]);
   }, []);
 
   useEffect(() => { load(); }, []);
@@ -67,8 +74,20 @@ export default function HomeScreen() {
             <Text style={styles.greeting}>Good day,</Text>
             <Text style={styles.businessName}>{user?.business_name || user?.name}</Text>
           </View>
-          <TouchableOpacity testID="notification-btn" style={styles.notifBtn}>
+          <TouchableOpacity 
+            testID="notification-btn" 
+            style={styles.notifBtn}
+            onPress={() => router.push('/notifications')}
+          >
             <MaterialCommunityIcons name="bell-outline" size={22} color={Colors.primary} />
+            {unreadCount > 0 && (
+              <Badge 
+                count={unreadCount} 
+                size="sm"
+                style={styles.notifBadge}
+                testID="notification-badge"
+              />
+            )}
           </TouchableOpacity>
         </View>
 
@@ -87,6 +106,34 @@ export default function HomeScreen() {
             <MaterialCommunityIcons name="scan-helper" size={28} color="#FFFFFF" />
           </View>
         </TouchableOpacity>
+
+        {/* Quick Links */}
+        <View style={styles.quickLinks}>
+          <TouchableOpacity
+            testID="calendar-btn"
+            onPress={() => router.push('/calendar')}
+            style={styles.quickLink}
+          >
+            <MaterialCommunityIcons name="calendar-month" size={24} color={Colors.primary} />
+            <Text style={styles.quickLinkText}>Calendar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            testID="analytics-btn"
+            onPress={() => router.push('/analytics')}
+            style={styles.quickLink}
+          >
+            <MaterialCommunityIcons name="chart-box" size={24} color={Colors.info} />
+            <Text style={styles.quickLinkText}>Analytics</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            testID="export-btn"
+            onPress={() => router.push('/export')}
+            style={styles.quickLink}
+          >
+            <MaterialCommunityIcons name="file-export" size={24} color={Colors.success} />
+            <Text style={styles.quickLinkText}>Export</Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Stats Grid */}
         <Text style={styles.sectionTitle}>Overview</Text>
@@ -192,6 +239,12 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface, borderRadius: Layout.radius.lg,
     justifyContent: 'center', alignItems: 'center',
     borderWidth: 1, borderColor: Colors.border,
+    position: 'relative',
+  },
+  notifBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
   },
   scanCard: {
     backgroundColor: Colors.primary, borderRadius: 20,
@@ -206,6 +259,28 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.2)',
     borderRadius: Layout.radius.xl,
     justifyContent: 'center', alignItems: 'center',
+  },
+  quickLinks: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: Layout.spacing.xl,
+    gap: 12,
+  },
+  quickLink: {
+    flex: 1,
+    backgroundColor: Colors.surface,
+    borderRadius: Layout.radius.lg,
+    padding: Layout.spacing.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border,
+    gap: 8,
+  },
+  quickLinkText: {
+    fontSize: Layout.fontSize.xs,
+    color: Colors.textMain,
+    fontWeight: '600',
   },
   sectionTitle: { fontSize: Layout.fontSize.lg, fontWeight: '700', color: Colors.textMain, marginBottom: Layout.spacing.md },
   rowHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Layout.spacing.md },

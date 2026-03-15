@@ -5,24 +5,28 @@ Provides 70-80% cost savings vs real-time Sonnet:
   - Image preprocessing (50% fewer tokens)
   - Queue-based processing (CPU efficient)
   
-Note: True Anthropic Batch API 50% discount requires a real ANTHROPIC_API_KEY.
-Without it, this uses emergentintegrations (Haiku) for processing — still 5x cheaper.
+Note: Batch processing uses the configured LLM provider manager with a low-cost model.
 """
 
-import os
 import uuid
 import json
 import logging
 from datetime import datetime, timezone
 from typing import Optional
-from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
+from llm_providers import LLMMessage, build_manager_from_env
 from .image_preprocessor import preprocess_invoice_image, get_image_hash
 from .pdf_handler import process_pdf
-from .model_router import HAIKU
 
 logger = logging.getLogger(__name__)
 
-EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY", "")
+_llm_manager = None
+
+
+def _get_llm_manager():
+    global _llm_manager
+    if _llm_manager is None:
+        _llm_manager = build_manager_from_env()
+    return _llm_manager
 
 EXTRACTION_SYSTEM_PROMPT = """You are an expert invoice data extraction AI specializing in Indian business documents.
 Extract all invoice fields from the provided image or text.
@@ -88,29 +92,39 @@ async def queue_for_batch(
     return job_id
 
 
-async def extract_invoice_with_llm(content: str, is_digital: bool, model: str) -> dict:
-    """Core AI extraction using emergentintegrations."""
-    session_id = str(uuid.uuid4())
-    chat = LlmChat(
-        api_key=EMERGENT_LLM_KEY,
-        session_id=session_id,
-        system_message=EXTRACTION_SYSTEM_PROMPT
-    ).with_model("anthropic", model)
+async def extract_invoice_with_llm(content: str, is_digital: bool) -> dict:
+    """Core AI extraction using the provider manager."""
+    llm_manager = _get_llm_manager()
+    if not llm_manager.has_providers():
+        raise ValueError("No LLM providers configured")
+
+    provider, resolved_model = llm_manager.resolve_provider_and_model("standard")
 
     if is_digital:
-        user_message = UserMessage(text=f"Extract all invoice fields as JSON per schema.\n\nINVOICE TEXT:\n{content}")
+        user_message = LLMMessage(text=f"Extract all invoice fields as JSON per schema.\n\nINVOICE TEXT:\n{content}")
     else:
-        image_content = ImageContent(image_base64=content)
-        user_message = UserMessage(
+        user_message = LLMMessage(
             text="Extract all invoice fields as JSON per schema.",
-            file_contents=[image_content]
+            images=[content],
+            image_mime_type="image/jpeg",
         )
 
-    response = await chat.send_message(user_message)
-    text = response.strip()
+    response = await llm_manager.complete(
+        system_prompt=EXTRACTION_SYSTEM_PROMPT,
+        user_message=user_message,
+        model=resolved_model,
+        provider=provider,
+        enable_fallback=True,
+    )
+    text = response.content.strip()
     if text.startswith("```"):
-        text = text.split("```")[1]
-        if text.startswith("json"):
+        # More robust parsing - handle multiple code fences
+        fences = [i for i in range(len(text)) if text[i:i+3] == "```"]
+        if len(fences) >= 2:
+            text = text[fences[0]+3:fences[-1]]
+        else:
+            text = text[3:]
+        if text.lstrip().startswith("json"):
             text = text[4:]
         text = text.strip()
 
@@ -149,7 +163,7 @@ async def process_batch_queue(db):
                 content, _ = preprocess_invoice_image(file_b64)
 
             # Extract using Haiku (cheapest model for batch)
-            extracted = await extract_invoice_with_llm(content, is_digital, HAIKU)
+            extracted = await extract_invoice_with_llm(content, is_digital)
 
             if "error" in extracted:
                 raise ValueError(extracted["error"])

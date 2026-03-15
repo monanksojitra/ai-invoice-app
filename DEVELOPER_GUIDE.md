@@ -94,7 +94,7 @@ InvoiceAI is a mobile-first application that enables local business owners (reta
 │                                   │                                      │
 │  ┌────────────────────────────────┴──────────────────────────────────┐  │
 │  │                    AI Extraction Pipeline                          │  │
-│  │       Claude Sonnet 4.5 Vision / Haiku (emergentintegrations)      │  │
+│  │  Anthropic + OpenAI + Gemini (provider manager)                    │  │
 │  └────────────────────────────────┬──────────────────────────────────┘  │
 └───────────────────────────────────┼──────────────────────────────────────┘
                                     │
@@ -157,7 +157,7 @@ InvoiceAI is a mobile-first application that enables local business owners (reta
 | **bcrypt** | Password hashing | - |
 | **python-jose** | JWT authentication | - |
 | **openpyxl** | Excel file generation | - |
-| **emergentintegrations** | LLM API wrapper (Claude) | - |
+| **Anthropic / OpenAI / Gemini SDKs** | LLM provider access | - |
 | **APScheduler** | Batch job scheduling | - |
 
 ### AI/ML
@@ -166,7 +166,8 @@ InvoiceAI is a mobile-first application that enables local business owners (reta
 |------------|---------|
 | **Claude Sonnet 4.5 Vision** | Primary invoice OCR + extraction |
 | **Claude Haiku 4.5** | Cost-optimized batch processing |
-| **emergentintegrations** | Unified LLM API wrapper |
+| **OpenAI GPT-4o** | Fallback extraction and cost optimization |
+| **Gemini 1.5 Flash/Pro** | Budget and fallback extraction |
 
 ---
 
@@ -747,7 +748,11 @@ cat > .env << EOF
 MONGO_URL=mongodb://localhost:27017
 DB_NAME=invoiceai_db
 JWT_SECRET=your-secret-key-here
-EMERGENT_LLM_KEY=your-api-key-here
+ANTHROPIC_API_KEY=your-anthropic-api-key
+OPENAI_API_KEY=your-openai-api-key
+GOOGLE_API_KEY=your-gemini-api-key
+DEFAULT_LLM_PROVIDER=anthropic
+LLM_FALLBACK_ORDER=anthropic,openai,gemini
 EOF
 
 # Run server
@@ -789,16 +794,40 @@ DB_NAME=invoiceai_db
 JWT_SECRET=your-secure-secret-key
 
 # AI API
-EMERGENT_LLM_KEY=your-emergent-api-key
+ANTHROPIC_API_KEY=your-anthropic-api-key
+OPENAI_API_KEY=your-openai-api-key
+GOOGLE_API_KEY=your-gemini-api-key
+DEFAULT_LLM_PROVIDER=anthropic
+LLM_FALLBACK_ORDER=anthropic,openai,gemini
 
 # Optional: Batch processing
 BATCH_ENABLED=true
+
+# Security and rate limiting
+REDIS_URL=redis://localhost:6379/0
+CORS_ALLOW_ORIGINS=http://localhost:8081,http://localhost:19006
+MAX_UPLOAD_BYTES=10485760
+EXPORT_MAX_RECORDS=5000
+RATE_LIMIT_DEFAULT=60/minute
+RATE_LIMIT_AUTH=5/minute
+RATE_LIMIT_PROCESS=10/minute
+RATE_LIMIT_EXPORT=10/minute
 ```
 
 ### Frontend (`.env`)
 
 ```env
 EXPO_PUBLIC_BACKEND_URL=http://localhost:8000
+```
+
+### Testing (backend tests)
+
+```env
+# Preferred base URL for backend integration tests
+TEST_BACKEND_URL=http://localhost:8000
+
+# Fallback if TEST_BACKEND_URL is not set
+BACKEND_URL=http://localhost:8000
 ```
 
 ---

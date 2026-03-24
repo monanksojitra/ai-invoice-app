@@ -80,7 +80,12 @@ agenthub/agents/youtube/db
 android-sdk/ -e 
 # Environment files
 *.env
-*.env.*
 *.agents
 *.agent
 
+# Local environment overrides (examples stay tracked)
+backend/.env
+frontend/.env
+temp_auto_push.bat
+temp_interactive_push.bat
+branch_structure.json
